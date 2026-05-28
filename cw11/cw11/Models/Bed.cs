@@ -11,6 +11,8 @@ public partial class Bed
 
     public int BedTypeId { get; set; }
 
+    public virtual ICollection<BedAssignment> BedAssignments { get; set; } = new List<BedAssignment>();
+
     public virtual BedType BedType { get; set; } = null!;
 
     public virtual Room Room { get; set; } = null!;

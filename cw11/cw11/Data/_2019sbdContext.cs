@@ -20,6 +20,8 @@ public partial class _2019sbdContext : DbContext
 
     public virtual DbSet<Bed> Beds { get; set; }
 
+    public virtual DbSet<BedAssignment> BedAssignments { get; set; }
+
     public virtual DbSet<BedType> BedTypes { get; set; }
 
     public virtual DbSet<Patient> Patients { get; set; }
@@ -72,6 +74,28 @@ public partial class _2019sbdContext : DbContext
                 .HasForeignKey(d => d.RoomId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("Beds_Rooms");
+        });
+
+        modelBuilder.Entity<BedAssignment>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("BedAssignments_pk");
+
+            entity.Property(e => e.From).HasColumnType("datetime");
+            entity.Property(e => e.PatientPesel)
+                .HasMaxLength(11)
+                .IsUnicode(false)
+                .IsFixedLength();
+            entity.Property(e => e.To).HasColumnType("datetime");
+
+            entity.HasOne(d => d.Bed).WithMany(p => p.BedAssignments)
+                .HasForeignKey(d => d.BedId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("BedAssignments_Beds");
+
+            entity.HasOne(d => d.PatientPeselNavigation).WithMany(p => p.BedAssignments)
+                .HasForeignKey(d => d.PatientPesel)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("BedAssignments_Patients");
         });
 
         modelBuilder.Entity<BedType>(entity =>

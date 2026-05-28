@@ -16,4 +16,6 @@ public partial class Patient
     public bool Sex { get; set; }
 
     public virtual ICollection<Admission> Admissions { get; set; } = new List<Admission>();
+
+    public virtual ICollection<BedAssignment> BedAssignments { get; set; } = new List<BedAssignment>();
 }
