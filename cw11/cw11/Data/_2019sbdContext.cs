@@ -1,0 +1,121 @@
+﻿using System;
+using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
+using cw11.Models;
+
+namespace cw11.Data;
+
+public partial class _2019sbdContext : DbContext
+{
+    public _2019sbdContext()
+    {
+    }
+
+    public _2019sbdContext(DbContextOptions<_2019sbdContext> options)
+        : base(options)
+    {
+    }
+
+    public virtual DbSet<Admission> Admissions { get; set; }
+
+    public virtual DbSet<Bed> Beds { get; set; }
+
+    public virtual DbSet<BedType> BedTypes { get; set; }
+
+    public virtual DbSet<Patient> Patients { get; set; }
+
+    public virtual DbSet<Room> Rooms { get; set; }
+
+    public virtual DbSet<Ward> Wards { get; set; }
+    
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.HasDefaultSchema("s33101");
+
+        modelBuilder.Entity<Admission>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("Admissions_pk");
+
+            entity.Property(e => e.AdmissionDate).HasColumnType("datetime");
+            entity.Property(e => e.DischargeDate).HasColumnType("datetime");
+            entity.Property(e => e.PatientPesel)
+                .HasMaxLength(11)
+                .IsUnicode(false)
+                .IsFixedLength();
+
+            entity.HasOne(d => d.PatientPeselNavigation).WithMany(p => p.Admissions)
+                .HasForeignKey(d => d.PatientPesel)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("Admissions_Patients");
+
+            entity.HasOne(d => d.Ward).WithMany(p => p.Admissions)
+                .HasForeignKey(d => d.WardId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("Admissions_Wards");
+        });
+
+        modelBuilder.Entity<Bed>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("Beds_pk");
+
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.RoomId)
+                .HasMaxLength(4)
+                .IsUnicode(false);
+
+            entity.HasOne(d => d.BedType).WithMany(p => p.Beds)
+                .HasForeignKey(d => d.BedTypeId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("Beds_BedTypes");
+
+            entity.HasOne(d => d.Room).WithMany(p => p.Beds)
+                .HasForeignKey(d => d.RoomId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("Beds_Rooms");
+        });
+
+        modelBuilder.Entity<BedType>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("BedTypes_pk");
+
+            entity.Property(e => e.Name).HasMaxLength(300);
+        });
+
+        modelBuilder.Entity<Patient>(entity =>
+        {
+            entity.HasKey(e => e.Pesel).HasName("Patients_pk");
+
+            entity.Property(e => e.Pesel)
+                .HasMaxLength(11)
+                .IsUnicode(false)
+                .IsFixedLength();
+            entity.Property(e => e.FirstName).HasMaxLength(50);
+            entity.Property(e => e.LastName).HasMaxLength(100);
+        });
+
+        modelBuilder.Entity<Room>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("Rooms_pk");
+
+            entity.Property(e => e.Id)
+                .HasMaxLength(4)
+                .IsUnicode(false);
+
+            entity.HasOne(d => d.Ward).WithMany(p => p.Rooms)
+                .HasForeignKey(d => d.WardId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("Room_Ward");
+        });
+
+        modelBuilder.Entity<Ward>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("Wards_pk");
+
+            entity.Property(e => e.Name).HasMaxLength(300);
+        });
+
+        OnModelCreatingPartial(modelBuilder);
+    }
+
+    partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
+}
